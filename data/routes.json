@@ -1,0 +1,162 @@
+[
+    {
+      "from": "Москва",
+      "to": "Нижний Новгород",
+      "transport": "car",
+      "distance": 400,
+      "time": 6,
+      "cost": 3800
+    },
+    {
+      "from": "Нижний Новгород",
+      "to": "Казань",
+      "transport": "car",
+      "distance": 400,
+      "time": 6,
+      "cost": 3800
+    },
+    {
+      "from": "Казань",
+      "to": "Самара",
+      "transport": "car",
+      "distance": 360,
+      "time": 5,
+      "cost": 3320
+    },
+    {
+      "from": "Казань",
+      "to": "Екатеринбург",
+      "transport": "car",
+      "distance": 950,
+      "time": 13,
+      "cost": 8400
+    },
+    {
+      "from": "Самара",
+      "to": "Екатеринбург",
+      "transport": "car",
+      "distance": 900,
+      "time": 10,
+      "cost": 8800
+    },
+    {
+      "from": "Екатеринбург",
+      "to": "Новосибирск",
+      "transport": "car",
+      "distance": 1600,
+      "time": 19,
+      "cost": 6200
+    },
+    {
+      "from": "Санкт-Петербург",
+      "to": "Москва",
+      "transport": "train",
+      "distance": 700,
+      "time": 5,
+      "cost": 4000
+    },
+    {
+      "from": "Казань",
+      "to": "Омск",
+      "transport": "train",
+      "distance": 1900,
+      "time": 28,
+      "cost": 6500
+    },
+    {
+      "from": "Самара",
+      "to": "Омск",
+      "transport": "train",
+      "distance": 1800,
+      "time": 26,
+      "cost": 6200
+    },
+    {
+      "from": "Москва",
+      "to": "Казань",
+      "transport": "train",
+      "distance": 800,
+      "time": 12,
+      "cost": 6000
+    },
+    {
+      "from": "Москва",
+      "to": "Екатеринбург",
+      "transport": "train",
+      "distance": 1600,
+      "time": 24,
+      "cost": 8000
+    },
+    {
+      "from": "Казань",
+      "to": "Екатеринбург",
+      "transport": "train",
+      "distance": 860,
+      "time": 14,
+      "cost": 6000
+    },
+    {
+      "from": "Самара",
+      "to": "Екатеринбург",
+      "transport": "train",
+      "distance": 900,
+      "time": 24,
+      "cost": 7000
+    },
+    {
+      "from": "Екатеринбург",
+      "to": "Омск",
+      "transport": "train",
+      "distance": 950,
+      "time": 11,
+      "cost": 3500
+    },
+    {
+      "from": "Омск",
+      "to": "Новосибирск",
+      "transport": "train",
+      "distance": 640,
+      "time": 7,
+      "cost": 3000
+    },
+    {
+      "from": "Санкт-Петербург",
+      "to": "Новосибирск",
+      "transport": "plane",
+      "distance": 3900,
+      "time": 4,
+      "cost": 20000
+    },
+    {
+      "from": "Санкт-Петербург",
+      "to": "Екатеринбург",
+      "transport": "plane",
+      "distance": 1800,
+      "time": 3,
+      "cost": 14000
+    },
+    {
+      "from": "Екатеринбург",
+      "to": "Новосибирск",
+      "transport": "plane",
+      "distance": 1400,
+      "time": 2,
+      "cost": 9000
+    },
+    {
+      "from": "Казань",
+      "to": "Новосибирск",
+      "transport": "plane",
+      "distance": 2500,
+      "time": 3,
+      "cost": 19000
+    },
+    {
+      "from": "Москва",
+      "to": "Екатеринбург",
+      "transport": "plane",
+      "distance": 1600,
+      "time": 3,
+      "cost": 14000
+    }
+  ]
