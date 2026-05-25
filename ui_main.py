@@ -313,6 +313,11 @@ class TransportApp(QWidget):
         # Рисуем лучший маршрут
         # ==========================================
 
-        self.graph_widget.set_route(
-            routes[0]["path"]
+        all_paths = [
+            route["path"]
+            for route in routes
+        ]
+
+        self.graph_widget.set_routes(
+            all_paths
         )

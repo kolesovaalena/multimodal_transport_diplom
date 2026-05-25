@@ -13,12 +13,16 @@ class GraphModel:
 
     def load_data(self, filename):
 
-        with open(filename, "r", encoding="utf-8") as file:
+        with open(
+                filename,
+                "r",
+                encoding="utf-8"
+        ) as file:
 
             routes = json.load(file)
 
         # =====================================
-        # Добавление транспортных маршрутов
+        # Добавление маршрутов
         # =====================================
 
         for route in routes:
@@ -28,36 +32,38 @@ class GraphModel:
 
             transport = route["transport"]
 
-            node_from = (city_from, transport)
-            node_to = (city_to, transport)
+            node_from = (
+                city_from,
+                transport
+            )
 
-            edge_data = {
-                "transport": transport,
-                "distance": route["distance"],
-                "time": route["time"],
-                "cost": route["cost"]
-            }
-
-            self.graph.add_edge(
-                node_from,
-                node_to,
-                **edge_data
+            node_to = (
+                city_to,
+                transport
             )
 
             self.graph.add_edge(
-                node_to,
+
                 node_from,
-                **edge_data
+                node_to,
+
+                transport=transport,
+
+                distance=route["distance"],
+
+                time=route["time"],
+
+                cost=route["cost"]
             )
 
         # =====================================
-        # Добавление пересадок
+        # Межслойные перегрузки
         # =====================================
 
         self.add_transfer_edges()
 
     # =====================================
-    # Пересадки
+    # Transfer edges
     # =====================================
 
     def add_transfer_edges(self):
@@ -65,6 +71,7 @@ class GraphModel:
         cities = set()
 
         for node in self.graph.nodes:
+
             cities.add(node[0])
 
         transports = [
@@ -73,38 +80,45 @@ class GraphModel:
             "plane"
         ]
 
+        transfer_count = 0
+
         for city in cities:
+
             for t1 in transports:
+
                 for t2 in transports:
+
                     if t1 == t2:
                         continue
 
                     node1 = (city, t1)
                     node2 = (city, t2)
 
-                    self.graph.add_node(node1)
-                    self.graph.add_node(node2)
+                    if (
+                            node1 in self.graph.nodes
+                            and
+                            node2 in self.graph.nodes
+                    ):
 
-                    self.graph.add_edge(
-                        node1,
-                        node2,
-                        transport="transfer",
-                        distance=0,
-                        time=1.5,
-                        cost=1200
-                    )
-                    self.graph.add_edge(
-                        node2,
-                        node1,
-                        transport="transfer",
-                        distance=0,
-                        time=1.5,
-                        cost=1200
-                    )
-        print("TRANSFER EDGES:", sum(
-            1 for _, _, d in self.graph.edges(data=True)
-            if d["transport"] == "transfer"
-        ))
+                        self.graph.add_edge(
+
+                            node1,
+                            node2,
+
+                            transport="transfer",
+
+                            distance=0,
+
+                            time=1.5,
+
+                            cost=1200
+                        )
+
+                        transfer_count += 1
+
+        print(
+            f"TRANSFER EDGES: {transfer_count}"
+        )
 
     # =====================================
     # Получение графа

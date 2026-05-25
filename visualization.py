@@ -1,13 +1,13 @@
-from PIL.ImageOps import scale
 from PySide6.QtWidgets import QWidget
 from PySide6.QtGui import (
     QPainter,
     QPen,
     QColor,
     QFont,
-    QBrush
+    QPainterPath,
+    QRadialGradient
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF
 
 class GraphWidget(QWidget):
 
@@ -16,39 +16,39 @@ class GraphWidget(QWidget):
         super().__init__()
 
         self.graph = graph
-
-        self.route = None
+        self.route = []
 
         self.setMinimumSize(1200, 800)
 
         # =====================================
-        # X-Координаты городов
+        # Координаты городов
         # =====================================
 
         self.city_x = {
 
             "Санкт-Петербург": 100,
-            "Москва": 250,
-            "Нижний Новгород": 420,
-            "Казань": 600,
-            "Самара": 760,
-            "Екатеринбург": 980,
-            "Омск": 1200,
-            "Новосибирск": 1450
+            "Москва": 220,
+            "Нижний Новгород": 360,
+            "Казань": 520,
+            "Самара": 680,
+            "Екатеринбург": 900,
+            "Омск": 1120,
+            "Новосибирск": 1320
         }
 
         # =====================================
-        # Y-Координаты слоёв
+        # Слои
         # =====================================
 
         self.layer_y = {
 
-            "plane": 120,
-            "train": 360,
-            "car": 620
+            "plane": 140,
+            "train": 420,
+            "car": 700
         }
+
         # =====================================
-        # Цвета транспорта
+        # Цвета
         # =====================================
 
         self.transport_colors = {
@@ -59,18 +59,94 @@ class GraphWidget(QWidget):
             "transfer": QColor("#ffd740")
         }
 
-    # =========================================
+    # =====================================
     # Установка маршрута
-    # =========================================
+    # =====================================
 
-    def set_route(self, route):
+    def set_routes(self, routes):
 
-        self.route = route
+        self.routes = routes
         self.update()
 
-    # =========================================
-    # Рисование
-    # =========================================
+    # =====================================
+    # Отрисовка дуги
+    # =====================================
+
+    def draw_curved_edge(
+            self,
+            painter,
+            x1,
+            y1,
+            x2,
+            y2,
+            color,
+            width=3,
+            glow=False,
+            dashed=False
+    ):
+
+        path = QPainterPath()
+
+        path.moveTo(x1, y1)
+
+        # =====================================
+        # Контрольная точка дуги
+        # =====================================
+
+        ctrl_x = (x1 + x2) / 2
+
+        # высота изгиба
+        curve_height = abs(x2 - x1) * 0.15
+
+        if y1 == y2:
+            ctrl_y = y1 - curve_height
+        else:
+            ctrl_y = (y1 + y2) / 2 - 60
+
+        path.quadTo(
+            QPointF(ctrl_x, ctrl_y),
+            QPointF(x2, y2)
+        )
+
+        # =====================================
+        # Glow
+        # =====================================
+
+        if glow:
+
+            glow_pen = QPen(
+                QColor(
+                    color.red(),
+                    color.green(),
+                    color.blue(),
+                    80
+                ),
+                width + 8
+            )
+
+            glow_pen.setCapStyle(Qt.RoundCap)
+
+            painter.setPen(glow_pen)
+            painter.drawPath(path)
+
+        # =====================================
+        # Основная линия
+        # =====================================
+
+        pen = QPen(color, width)
+
+        if dashed:
+            pen.setStyle(Qt.DashLine)
+
+        pen.setCapStyle(Qt.RoundCap)
+
+        painter.setPen(pen)
+
+        painter.drawPath(path)
+
+    # =====================================
+    # Paint
+    # =====================================
 
     def paintEvent(self, event):
 
@@ -81,12 +157,12 @@ class GraphWidget(QWidget):
         )
 
         # =====================================
-        # Тёмный фон
+        # Фон
         # =====================================
 
         painter.fillRect(
             self.rect(),
-            QColor("#111111")
+            QColor("#0d1117")
         )
 
         # =====================================
@@ -94,222 +170,277 @@ class GraphWidget(QWidget):
         # =====================================
 
         scale_x = self.width() / 1600
-        scale_y = self.height() / 800
+        scale_y = self.height() / 900
 
         # =====================================
-        # Подписи слоёв
+        # Layer panels
         # =====================================
 
-        painter.setFont(QFont("Arial", 14, QFont.Bold))
-        painter.setPen(QColor("#ffffff"))
+        layer_panels = [
 
-        painter.drawText(20, int(150 * scale_y), "AVIATION LAYER")
-        painter.drawText(20, int(390 * scale_y), "RAILWAY LAYER")
-        painter.drawText(20, int(650 * scale_y), "CAR LAYER")
+            ("plane", "#311b1b"),
+            ("train", "#13293d"),
+            ("car", "#132d20")
+        ]
 
-        # =====================================
-        # Горизонтальные линии слоёв
-        # =====================================
+        for layer, color in layer_panels:
 
-        for layer, y in self.layer_y.items():
-            pen = QPen(
-                QColor("#333333"),
-                2,
-                Qt.DashLine
-            )
+            y = self.layer_y[layer] * scale_y
 
-            painter.setPen(pen)
-            painter.drawLine(
-                50,
-                int(y * scale_y),
-                int(1550 * scale_x),
-                int(y * scale_y)
+            painter.fillRect(
+                40,
+                int(y - 80),
+                int(1400 * scale_x),
+                160,
+                QColor(color)
             )
 
         # =====================================
-        # Рёбра графа
+        # Названия слоев
+        # =====================================
+
+        painter.setFont(
+            QFont("Arial", 16, QFont.Bold)
+        )
+
+        painter.setPen(
+            QColor("#ffffff")
+        )
+
+        painter.drawText(
+            40,
+            int(100 * scale_y),
+            "AVIATION LAYER"
+        )
+
+        painter.drawText(
+            40,
+            int(380 * scale_y),
+            "RAILWAY LAYER"
+        )
+
+        painter.drawText(
+            40,
+            int(660 * scale_y),
+            "CAR LAYER"
+        )
+
+        # =====================================
+        # Неактивные рёбра
         # =====================================
 
         for u, v, data in self.graph.edges(data=True):
+
             city1, transport1 = u
             city2, transport2 = v
 
-            x1 = self.city_x[city1]
-            y1 = self.layer_y[transport1]
+            x1 = self.city_x[city1] * scale_x
+            y1 = self.layer_y[transport1] * scale_y
 
-            x2 = self.city_x[city2]
-            y2 = self.layer_y[transport2]
-
-            x1 *= scale_x
-            y1 *= scale_y
-
-            x2 *= scale_x
-            y2 *= scale_y
+            x2 = self.city_x[city2] * scale_x
+            y2 = self.layer_y[transport2] * scale_y
 
             transport = data["transport"]
-            color = self.transport_colors[transport]
 
-            # =====================================
-            # Transfer edge
-            # =====================================
+            color = QColor(
+                self.transport_colors[
+                    transport
+                ]
+            )
+
+            color.setAlpha(70)
+
+            dashed = False
 
             if transport == "transfer":
-                pen = QPen(
-                    color,
-                    2,
-                    Qt.DashLine
-                )
+                dashed = True
 
-            else:
-                pen = QPen(
-                    color,
-                    4
-                )
-            painter.setPen(pen)
-            painter.drawLine(
-                int(x1),
-                int(y1),
-
-                int(x2),
-                int(y2)
+            self.draw_curved_edge(
+                painter,
+                x1,
+                y1,
+                x2,
+                y2,
+                color,
+                width=2,
+                dashed=dashed
             )
 
         # =====================================
-        # Подсветка маршрута
+        # Активные маршруты
         # =====================================
 
-        if self.route:
+        route_nodes = set()
 
-            # glow
-            glow_pen = QPen(
-                QColor("#fff176"),
-                12
-            )
-            painter.setPen(glow_pen)
+        route_colors = [
 
-            for i in range(len(self.route) - 1):
-                city1, transport1 = self.route[i]
-                city2, transport2 = self.route[i + 1]
+            QColor("#ffff00"),
+            QColor("#ff00ff"),
+            QColor("#00ffff")
+        ]
 
-                x1 = self.city_x[city1]
-                y1 = self.layer_y[transport1]
+        if self.routes:
 
-                x2 = self.city_x[city2]
-                y2 = self.layer_y[transport2]
+            for route_index, route in enumerate(self.routes):
 
-                x1 *= scale_x
-                y1 *= scale_y
+                color = route_colors[
+                    route_index % len(route_colors)
+                    ]
 
-                x2 *= scale_x
-                y2 *= scale_y
+                for i in range(len(route) - 1):
 
-                painter.drawLine(
+                    city1, transport1 = route[i]
+                    city2, transport2 = route[i + 1]
 
-                    int(x1),
-                    int(y1),
+                    route_nodes.add(
+                        (city1, transport1)
+                    )
 
-                    int(x2),
-                    int(y2)
-                )
+                    route_nodes.add(
+                        (city2, transport2)
+                    )
 
-            # основная линия
-            route_pen = QPen(
-                QColor("#ffff00"),
-                6
-            )
-            painter.setPen(route_pen)
+                    x1 = self.city_x[city1] * scale_x
+                    y1 = self.layer_y[transport1] * scale_y
 
-            for i in range(len(self.route) - 1):
-                city1, transport1 = self.route[i]
-                city2, transport2 = self.route[i + 1]
+                    x2 = self.city_x[city2] * scale_x
+                    y2 = self.layer_y[transport2] * scale_y
 
-                x1 = self.city_x[city1]
-                y1 = self.layer_y[transport1]
+                    edge = self.graph[
+                        route[i]
+                    ][
+                        route[i + 1]
+                    ]
 
-                x2 = self.city_x[city2]
-                y2 = self.layer_y[transport2]
+                    transport = edge["transport"]
 
-                x1 *= scale_x
-                y1 *= scale_y
+                    dashed = False
 
-                x2 *= scale_x
-                y2 *= scale_y
+                    if transport == "transfer":
+                        dashed = True
 
-                painter.drawLine(
-                    int(x1),
-                    int(y1),
-
-                    int(x2),
-                    int(y2)
-                )
+                    self.draw_curved_edge(
+                        painter,
+                        x1,
+                        y1,
+                        x2,
+                        y2,
+                        color,
+                        width=6,
+                        glow=True,
+                        dashed=dashed
+                    )
 
         # =====================================
         # Вершины
         # =====================================
 
         for node in self.graph.nodes:
+
             city, transport = node
 
-            x = self.city_x[city]
-            y = self.layer_y[transport]
+            x = self.city_x[city] * scale_x
+            y = self.layer_y[transport] * scale_y
 
-            x *= scale_x
-            y *= scale_y
+            color = self.transport_colors[
+                transport
+            ]
 
-            color = self.transport_colors[transport]
+            # =====================================
+            # Активная вершина
+            # =====================================
 
-            # glow
-            painter.setBrush(
+            active = False
+
+            if node in route_nodes:
+                active = True
+
+            # =====================================
+            # Glow
+            # =====================================
+
+            radius = 18
+
+            if active:
+                radius = 28
+
+            gradient = QRadialGradient(QPointF(x, y),
+                radius
+            )
+
+            gradient.setColorAt(
+                0,
                 QColor(
                     color.red(),
                     color.green(),
                     color.blue(),
-                    120
+                    255
                 )
             )
 
+            gradient.setColorAt(
+                1,
+                QColor(
+                    color.red(),
+                    color.green(),
+                    color.blue(),
+                    0
+                )
+            )
+
+            painter.setBrush(gradient)
+
             painter.setPen(Qt.NoPen)
-            painter.drawEllipse(
-                int(x - 16),
-                int(y - 16),
 
-                32,
-                32
+            painter.drawEllipse(
+                QPointF(x, y),
+                radius,
+                radius
             )
 
-            # core
+            # =====================================
+            # Core
+            # =====================================
+
             painter.setBrush(color)
-            painter.drawEllipse(
-                int(x - 8),
-                int(y - 8),
 
-                16,
-                16
+            core_size = 8
+
+            if active:
+                core_size = 12
+
+            painter.drawEllipse(
+                QPointF(x, y),
+                core_size,
+                core_size
             )
 
-            # подпись
+            # =====================================
+            # Подписи
+            # =====================================
+
             painter.setPen(
                 QColor("#ffffff")
             )
+
             painter.setFont(
-                QFont("Arial",9)
+                QFont("Arial", 9)
             )
+
             painter.drawText(
-                int(x - 40),
-                int(y - 20),
-                f"{city}"
+                int(x - 45),
+                int(y - 25),
+                city
             )
 
         # =====================================
         # Легенда
         # =====================================
 
-        legend_y = 720 * scale_y
-        painter.setFont(
-            QFont("Arial",10)
-        )
+        legend_y = 820 * scale_y
 
         legends = [
+
             ("plane", "Авиация"),
             ("train", "Железная дорога"),
             ("car", "Автомобильный"),
@@ -318,15 +449,23 @@ class GraphWidget(QWidget):
 
         x_pos = 80
 
+        painter.setFont(
+            QFont("Arial", 11)
+        )
+
         for key, text in legends:
+
             color = self.transport_colors[key]
+
             painter.setBrush(color)
+
             painter.setPen(Qt.NoPen)
+
             painter.drawRect(
                 int(x_pos),
                 int(legend_y),
-                25,
-                25
+                28,
+                28
             )
 
             painter.setPen(
@@ -334,9 +473,9 @@ class GraphWidget(QWidget):
             )
 
             painter.drawText(
-                int(x_pos + 35),
-                int(legend_y + 18),
+                int(x_pos + 40),
+                int(legend_y + 20),
                 text
             )
 
-            x_pos += 250
+            x_pos += 260
